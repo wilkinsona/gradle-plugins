@@ -1,4 +1,4 @@
-package org.springframework.build.gradle.springio.platform;
+package org.springframework.build.gradle.springio;
 
 import org.gradle.api.Action
 import org.gradle.api.InvalidUserDataException
@@ -20,7 +20,7 @@ abstract class AbstractPlatformDependenciesBeforeResolveAction implements Action
 
 	Configuration configuration
 
-	String resource = 'springio-dependencies.properties'
+	String resource = 'spring-io-dependencies.properties'
 
 	@Override
 	public void execute(ResolvableDependencies resolvableDependencies) {

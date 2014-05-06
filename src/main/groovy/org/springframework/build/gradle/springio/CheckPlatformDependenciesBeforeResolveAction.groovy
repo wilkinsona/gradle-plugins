@@ -1,4 +1,4 @@
-package org.springframework.build.gradle.springio.platform
+package org.springframework.build.gradle.springio
 
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.artifacts.Configuration
@@ -31,7 +31,7 @@ class CheckPlatformDependenciesBeforeResolveAction extends AbstractPlatformDepen
 			}
 
 			if (message) {
-				message += "\nPlease refer to the plugin's README for further instructions: https://github.com/spring-projects/gradle-plugins/tree/master/springio-platform-plugin#dealing-with-unmapped-dependencies"
+				message += "\nPlease refer to the plugin's README for further instructions: https://github.com/spring-projects/gradle-plugins/tree/master/spring-io-plugin#dealing-with-unmapped-dependencies"
 				throw new InvalidUserDataException(message)
 			}
 		}

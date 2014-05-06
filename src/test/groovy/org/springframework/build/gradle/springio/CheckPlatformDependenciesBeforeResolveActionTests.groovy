@@ -1,4 +1,4 @@
-package org.springframework.build.gradle.springio.platform
+package org.springframework.build.gradle.springio
 
 import org.gradle.api.Action
 import org.gradle.api.InvalidUserDataException;
@@ -9,6 +9,7 @@ import org.gradle.api.artifacts.ResolvableDependencies;
 import org.gradle.api.internal.artifacts.DefaultModuleVersionSelector
 import org.gradle.api.internal.artifacts.ivyservice.DefaultDependencyResolveDetails
 import org.gradle.testfixtures.ProjectBuilder
+import org.springframework.build.gradle.springio.CheckPlatformDependenciesBeforeResolveAction;
 
 import spock.lang.Specification
 
@@ -17,11 +18,11 @@ import spock.lang.Specification
  * @author Rob Winch
  * @author Andy Wilkinson
  */
-class MapPlatformDependenciesBeforeResolveActionTests extends Specification {
+class CheckPlatformDependenciesBeforeResolveActionTests extends Specification {
 	Project parent
 	Project child
 	Configuration config
-	AbstractPlatformDependenciesBeforeResolveAction action
+	CheckPlatformDependenciesBeforeResolveAction action
 
 	def setup() {
 		parent = ProjectBuilder.builder().withName("parent").build()
@@ -29,47 +30,58 @@ class MapPlatformDependenciesBeforeResolveActionTests extends Specification {
 		parent.version = 'nochange'
 
 		config = parent.configurations.create('configuration')
-		action = new MapPlatformDependenciesBeforeResolveAction(project: parent, configuration: config, resource: 'test-springio-dependencies')
+		action = new CheckPlatformDependenciesBeforeResolveAction(project: parent, configuration: config, resource: 'test-spring-io-dependencies')
 
 		child = ProjectBuilder.builder().withName('child').withParent(parent).build()
 		child.group = parent.group
 		child.version = parent.version
 	}
 
-	def "Action ignores these projects"() {
+	def "Execution fails with unmapped direct dependency"() {
 		setup:
-			DependencyResolveDetails details = details('thisprojectgroup:child:nochange')
+			parent.dependencies {
+				configuration "notfound:notfound:nochange"
+			}
 		when:
 			action.execute(Mock(ResolvableDependencies))
-			config.resolutionStrategy.dependencyResolveRule.execute(details)
+			config.resolvedConfiguration
 		then:
-			details.target.group == 'thisprojectgroup'
-			details.target.name == 'child'
-			details.target.version == 'nochange'
+			thrown InvalidUserDataException
 	}
 
-	def "Action supplies mapped version"() {
+	def "Execution succeeds with unmapped transitive dependency"() {
 		setup:
-			DependencyResolveDetails details = details('standardgroup:standardname:changeme')
+			DependencyResolveDetails details = details('notfound:notfound:nochange')
 		when:
 			action.execute(Mock(ResolvableDependencies))
 			config.resolutionStrategy.dependencyResolveRule.execute(details)
-		then:
-			details.target.group == 'standardgroup'
-			details.target.name == 'standardname'
-			details.target.version == 'standardversion'
+		then: 'resolution will succeed'
+			config.resolvedConfiguration
 	}
 
-	def "Action leaves unmapped dependency unchanged"() {
+	def "Action can be configured to fail with unmapped transitive dependency"() {
 		setup:
-			DependencyResolveDetails details = details('something:unknown:1.0')
+			DependencyResolveDetails details = details('notfound:notfound:nochange')
+			action.failOnUnmappedTransitiveDependency = true
 		when:
 			action.execute(Mock(ResolvableDependencies))
 			config.resolutionStrategy.dependencyResolveRule.execute(details)
+			config.resolvedConfiguration
 		then:
-			details.target.group == 'something'
-			details.target.name == 'unknown'
-			details.target.version == '1.0'
+			thrown InvalidUserDataException
+	}
+
+	def "Action can be configured to succeed with unmapped direct dependency"() {
+		setup:
+			parent.dependencies {
+				configuration "notfound:notfound:nochange"
+			}
+			action.failOnUnmappedDirectDependency = false
+		when:
+			action.execute(Mock(ResolvableDependencies))
+
+		then: 'resolution will succeeed'
+			config.resolvedConfiguration
 	}
 
 	DependencyResolveDetails details(String path) {

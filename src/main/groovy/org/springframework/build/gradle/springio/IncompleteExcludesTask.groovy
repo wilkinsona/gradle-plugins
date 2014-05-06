@@ -1,4 +1,4 @@
-package org.springframework.build.gradle.springio.platform
+package org.springframework.build.gradle.springio
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
@@ -17,7 +17,7 @@ class IncompleteExcludesTask extends DefaultTask {
 
 	Collection<Configuration> configurations
 
-	File reportFile = project.file("$project.buildDir/springio/incomplete-excludes.log")
+	File reportFile = project.file("$project.buildDir/spring-io/incomplete-excludes.log")
 
 	@TaskAction
 	void check() {

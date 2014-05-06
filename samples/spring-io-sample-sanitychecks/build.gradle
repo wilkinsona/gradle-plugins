@@ -4,12 +4,12 @@ buildscript {
 		maven { url 'https://repo.spring.io/plugins-release' }
 	}
 	dependencies {
-		classpath 'org.springframework.build.gradle:springio-platform-plugin:0.0.3.BUILD-SNAPSHOT'
+		classpath 'org.springframework.build.gradle:spring-io-plugin:0.0.3.BUILD-SNAPSHOT'
 	}
 }
 
 apply plugin: 'groovy'
-apply plugin: 'springio-platform'
+apply plugin: 'spring-io'
 
 repositories {
 	mavenCentral()

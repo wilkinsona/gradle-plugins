@@ -1,4 +1,4 @@
-package org.springframework.build.gradle.springio.platform
+package org.springframework.build.gradle.springio
 
 import org.gradle.api.Action
 import org.gradle.api.Project
@@ -9,6 +9,9 @@ import org.gradle.api.internal.artifacts.DefaultModuleVersionSelector
 import org.gradle.api.internal.artifacts.ivyservice.DefaultDependencyResolveDetails
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.testfixtures.ProjectBuilder
+import org.springframework.build.gradle.springio.IncompleteExcludesTask;
+import org.springframework.build.gradle.springio.SpringIoPlugin;
+
 import spock.lang.Specification
 
 /**
@@ -23,7 +26,7 @@ class IncompleteExcludesTaskTests extends Specification {
 	def setup() {
 		parent = ProjectBuilder.builder().withName("parent").build()
 		parent.apply plugin: JavaPlugin
-		task = parent.tasks.create(name: SpringioPlatformPlugin.INCOMPLETE_EXCLUDES_TASK_NAME, type: IncompleteExcludesTask)
+		task = parent.tasks.create(name: SpringIoPlugin.INCOMPLETE_EXCLUDES_TASK_NAME, type: IncompleteExcludesTask)
 	}
 
 	def "fails with exclude group only"() {

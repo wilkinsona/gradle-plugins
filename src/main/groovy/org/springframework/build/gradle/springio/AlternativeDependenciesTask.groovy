@@ -1,4 +1,4 @@
-package org.springframework.build.gradle.springio.platform
+package org.springframework.build.gradle.springio
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
@@ -15,7 +15,7 @@ import org.gradle.api.tasks.TaskAction
  */
 class AlternativeDependenciesTask extends DefaultTask {
 
-	File reportFile = project.file("$project.buildDir/springio/alternative-dependencies.log")
+	File reportFile = project.file("$project.buildDir/spring-io/alternative-dependencies.log")
 
 	@Input
 	@Optional
@@ -27,7 +27,7 @@ class AlternativeDependenciesTask extends DefaultTask {
 	void check() {
 		reportFile.parentFile.mkdirs()
 		if(!alternatives) {
-			InputStream stream = getClass().getResourceAsStream('springio-alternatives.properties')
+			InputStream stream = getClass().getResourceAsStream('spring-io-alternatives.properties')
 			alternatives = new Properties()
 			alternatives.load(stream)
 		}

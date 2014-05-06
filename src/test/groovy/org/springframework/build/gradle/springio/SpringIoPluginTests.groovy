@@ -1,10 +1,15 @@
-package org.springframework.build.gradle.springio.platform
+package org.springframework.build.gradle.springio
 
 import com.google.common.io.Files
+
 import org.gradle.api.*
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.testfixtures.ProjectBuilder
+import org.springframework.build.gradle.springio.AlternativeDependenciesTask;
+import org.springframework.build.gradle.springio.IncompleteExcludesTask;
+import org.springframework.build.gradle.springio.SpringIoPlugin;
+
 import spock.lang.AutoCleanup
 import spock.lang.Specification
 
@@ -12,7 +17,7 @@ import spock.lang.Specification
  *
  * @author Rob Winch
  */
-class SpringioPlatformPluginTests extends Specification {
+class SpringIoPluginTests extends Specification {
 	Project project
 	@AutoCleanup("deleteDir")
 	File jdkHome = Files.createTempDir()
@@ -27,35 +32,35 @@ class SpringioPlatformPluginTests extends Specification {
 
 	def "Sets up does not fail on non Java project"() {
 		when:
-			project.apply plugin: SpringioPlatformPlugin
+			project.apply plugin: SpringIoPlugin
 		then:
-			!project.configurations.hasProperty('springioTestRuntime')
+			!project.configurations.hasProperty('springIoTestRuntime')
 	}
 
 	def "Works for Groovy project"() {
 		when:
-			project.apply plugin: SpringioPlatformPlugin
+			project.apply plugin: SpringIoPlugin
 			project.apply plugin: GroovyPlugin
 		then: 'Plugin performs configurations'
-			project.configurations.springioTestRuntime
+			project.configurations.springIoTestRuntime
 	}
 
 	def "Sets up configurations.springioTestRuntime"() {
 		when:
-			project.apply plugin: SpringioPlatformPlugin
+			project.apply plugin: SpringIoPlugin
 			project.apply plugin: JavaPlugin
 		then:
-			project.configurations.springioTestRuntime
+			project.configurations.springIoTestRuntime
 		and:
-			project.configurations.springioTestRuntime.extendsFrom.contains(project.configurations.testRuntime)
+			project.configurations.springIoTestRuntime.extendsFrom.contains(project.configurations.testRuntime)
 	}
 
 	def "Creates springioCheck Task"() {
 		when:
-			project.apply plugin: SpringioPlatformPlugin
+			project.apply plugin: SpringIoPlugin
 			project.apply plugin: JavaPlugin
 		then:
-			Task sioc = project.tasks.findByName(SpringioPlatformPlugin.CHECK_TASK_NAME)
+			Task sioc = project.tasks.findByName(SpringIoPlugin.CHECK_TASK_NAME)
 			sioc
 			sioc.taskDependencies.getDependencies(sioc) == [versionMappingCheckTask, springioTestTask, alternativeDependenciesTask, incompleteExcludesTask] as Set
 	}
@@ -64,7 +69,7 @@ class SpringioPlatformPluginTests extends Specification {
 		setup:
 			setupJdks()
 		when:
-			project.apply plugin: SpringioPlatformPlugin
+			project.apply plugin: SpringIoPlugin
 			project.apply plugin: JavaPlugin
 		then:
 			Task siot = springioTestTask
@@ -76,16 +81,16 @@ class SpringioPlatformPluginTests extends Specification {
 		setup:
 			setupJdks()
 		when:
-			project.apply plugin: SpringioPlatformPlugin
+			project.apply plugin: SpringIoPlugin
 			project.apply plugin: JavaPlugin
 		then:
 			jdk7TestTask
 			jdk7TestTask.executable == java.absolutePath
 	}
 
-	def "Does not create springioJDK7Test if JDK7_HOME missing Task"() {
+	def "Does not create springIoJdk7Test if JDK7_HOME missing"() {
 		when:
-			project.apply plugin: SpringioPlatformPlugin
+			project.apply plugin: SpringIoPlugin
 			project.apply plugin: JavaPlugin
 		then:
 			!jdk7TestTask
@@ -95,40 +100,40 @@ class SpringioPlatformPluginTests extends Specification {
 		setup:
 			setupJdks()
 		when:
-			project.apply plugin: SpringioPlatformPlugin
+			project.apply plugin: SpringIoPlugin
 			project.apply plugin: JavaPlugin
 		then:
 			jdk8TestTask
 			jdk8TestTask.executable == java.absolutePath
 	}
 
-	def "Does not create springioJDK8Test if JDK8_HOME missing Task"() {
+	def "Does not create springioJdk8Test if JDK8_HOME missing"() {
 		when:
-			project.apply plugin: SpringioPlatformPlugin
+			project.apply plugin: SpringIoPlugin
 			project.apply plugin: JavaPlugin
 		then:
 			!jdk7TestTask
 	}
 
-	def "Creates springioIncompleteExcludes Task"() {
+	def "Creates springIoIncompleteExcludes Task"() {
 		when:
-			project.apply plugin: SpringioPlatformPlugin
+			project.apply plugin: SpringIoPlugin
 			project.apply plugin: JavaPlugin
 		then:
 			incompleteExcludesTask instanceof IncompleteExcludesTask
 	}
 
-	def "Creates springioAlternativeDependencies Task"() {
+	def "Creates springIoAlternativeDependencies Task"() {
 		when:
-			project.apply plugin: SpringioPlatformPlugin
+			project.apply plugin: SpringIoPlugin
 			project.apply plugin: JavaPlugin
 		then:
 			alternativeDependenciesTask instanceof AlternativeDependenciesTask
 	}
 
-	def "Creates springioDependencyVersionMappingCheck task"() {
+	def "Creates springIoDependencyVersionMappingCheck task"() {
 		when:
-			project.apply plugin: SpringioPlatformPlugin
+			project.apply plugin: SpringIoPlugin
 			project.apply plugin: JavaPlugin
 		then:
 			versionMappingCheckTask
@@ -136,36 +141,36 @@ class SpringioPlatformPluginTests extends Specification {
 
 	def 'gh-36: finds java exec on Windows'() {
 		expect:
-			SpringioPlatformPlugin.createRelativeJavaExec(true) == '/bin/java.exe'
+			SpringIoPlugin.createRelativeJavaExec(true) == '/bin/java.exe'
 	}
 
 	def 'gh-36: finds java exec on non Windows'() {
 		expect:
-		SpringioPlatformPlugin.createRelativeJavaExec(false) == '/bin/java'
+		SpringIoPlugin.createRelativeJavaExec(false) == '/bin/java'
 	}
 
 	def getAlternativeDependenciesTask() {
-		project.tasks.findByName(SpringioPlatformPlugin.ALTERNATIVE_DEPENDENCIES_TASK_NAME)
+		project.tasks.findByName(SpringIoPlugin.ALTERNATIVE_DEPENDENCIES_TASK_NAME)
 	}
 
 	def getIncompleteExcludesTask() {
-		project.tasks.findByName(SpringioPlatformPlugin.INCOMPLETE_EXCLUDES_TASK_NAME)
+		project.tasks.findByName(SpringIoPlugin.INCOMPLETE_EXCLUDES_TASK_NAME)
 	}
 
 	def getSpringioTestTask() {
-		project.tasks.findByName(SpringioPlatformPlugin.TEST_TASK_NAME)
+		project.tasks.findByName(SpringIoPlugin.TEST_TASK_NAME)
 	}
 
 	def getJdk7TestTask() {
-		project.tasks.findByName('springioJDK7Test')
+		project.tasks.findByName('springIoJdk7Test')
 	}
 
 	def getJdk8TestTask() {
-		project.tasks.findByName('springioJDK8Test')
+		project.tasks.findByName('springIoJdk8Test')
 	}
 
 	def getVersionMappingCheckTask() {
-		project.tasks.findByName('springioDependencyVersionMappingCheck')
+		project.tasks.findByName('springIoDependencyVersionMappingCheck')
 	}
 
 	def setupJdks() {
